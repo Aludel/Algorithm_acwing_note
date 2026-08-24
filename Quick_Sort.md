@@ -72,7 +72,8 @@ void QuickSort(int q[], int lo, int hi) {
   // 继续进行递归快排
   // 如果使用i的话,这种写法，分界点不能为 lo，不然会有边界问题（eg: 1 2 then always 1 2 死循环）
   // QuickSort(q,lo,i-1);
-  // QuickSort(q,i,hi); 
+  // QuickSort(q,i,hi);
+  // 使用j的写法，不能使用hi作分界点，不然会有边界问题，死循环
   QuickSort(q,lo,j);
   QuickSort(q,j+1,hi);
 }
