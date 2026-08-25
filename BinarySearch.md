@@ -171,3 +171,57 @@ int bsearch_2(int l, int r)
 }
 ```
 
+### 题目模板
+```c++
+#include <iostream>
+using namespace std;
+const int N=100005;
+int arry[N];
+
+int main(){
+    int n,k;
+    cin>>n;
+    cin>>k;
+    for(int i=0;i<n;++i){
+        cin>>arry[i];
+    }
+    while(k--){
+        int target;
+        cin>>target;
+        
+        int l=0,r=n-1;
+        while(l<r){
+            // 先左后右
+            int mid=(l+r)>>1;
+            if(arry[mid]>=target) {
+                r=mid;
+            }
+            else {
+                l=mid+1;
+            }
+        }
+        if(arry[l]!=target) {
+            cout<<"-1 -1"<<endl;
+        }
+        else {
+            cout<<l<<" ";
+            
+            // 找右边界
+            l=0,r=n-1;
+            while(l<r){
+                int mid=(l+r+1)>>1;
+                if(arry[mid]<=target){
+                    l=mid;
+                }
+                else{
+                    r=mid-1;
+                }
+            }
+            cout<<l<<endl;
+        }
+    }
+    return 0;
+}
+```
+```
+
