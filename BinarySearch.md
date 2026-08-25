@@ -22,11 +22,11 @@
 
 ## 数据范围
 
-$1 \le n \le 100000$
+- $1 \le n \le 100000$
 
-$1 \le q \le 10000$
+- $1 \le q \le 10000$
 
-$1 \le k \le 10000$
+- $1 \le k \le 10000$
 
 ### 输入样例：
 
@@ -66,28 +66,30 @@ $1 \le k \le 10000$
 ### 模板一
 当性质满足的时候，选择左区间，不满足的时候，选择右区间
 ```text
-if(check(mid)) hi=mid;
-else lo=mid+1;
-// if(check(mid)) true  -> [lo  ,mid]
-//                false -> [mid+1,hi]
+if(check(mid)) r=mid;
+else l=mid+1;
+// if(check(mid)) true  -> [l  ,mid]
+//                false -> [mid+1,r]
 ```
 使用模板一时,mid的公式为：
-$$mid=(lo+hi)>>1$$
+$$mid=(l+r)>>1$$
 ### 模板二
 当性质满足的时候，选择右区间，不满足的时候，选择左区间
 ```text
-if(check(mid)) lo=mid;
-else hi=mid-1;
-// if(check(mid)) true  -> [mid  ,hi]
-//                false -> [lo,mid-1]
+if(check(mid)) l=mid;
+else r=mid-1;
+// if(check(mid)) true  -> [mid  ,r]
+//                false -> [l,mid-1]
 ```
 使用模板二时,mid的公式为：
-$$mid=(lo+hi+1)>>1$$
+$$mid=(l+r+1)>>1$$
 ### 关于mid计算公式的不同
-mid=(lo+hi+1)>>1;用于应对整数除法带来的向下取整
+mid=(l+r+1)>>1;用于应对整数除法带来的向下取整
 举例：
+```
 index 0 1 
 内容  1 3
+```
 
 check(mid)逻辑,查找k
 ```c++
@@ -105,42 +107,63 @@ array: 1, 3
 构造性质：check(mid) 的逻辑为 array[mid] <= 3。
 此时应套用 模板二 逻辑（因为当 array[mid] <= 3 为真时，需要执行 lo = mid 继续向右探测）。
 
-情况 1：正确使用公式 mid = (lo + hi + 1) >> 1（向上取整）
-初始区间：lo = 0, hi = 1。
+情况 1：正确使用公式 mid = (l + r + 1) >> 1（向上取整）
+初始区间：l = 0, r = 1。
 
 计算中点：mid = (0 + 1 + 1) >> 1 = 1。
 
 执行判断：check(1) 对应 array[1] <= 3 $\implies 3 \le 3$，结果为 true。
 
-更新区间：执行 lo = mid = 1。
+更新区间：执行 l = mid = 1。
 
-当前状态：区间变为 [1, 1]。此时 lo == hi，循环正确结束，成功找到目标下标 1。
+当前状态：区间变为 [1, 1]。此时 l == r，循环正确结束，成功找到目标下标 1。
 
 
-情况 2：错误使用公式 mid = (lo + hi) >> 1（向下取整导致的死循环）
-初始区间：lo = 0, hi = 1。
+情况 2：错误使用公式 mid = (l + r) >> 1（向下取整导致的死循环）
+初始区间：l = 0, r = 1。
 
 计算中点：mid = (0 + 1) >> 1 = 0。
 
 执行判断：check(0) 对应 array[0] <= 3 $\implies 1 \le 3$，结果为 true。
 
-更新区间：执行 lo = mid = 0。
+更新区间：执行 l = mid = 0。
 
 当前状态：区间仍然是 [0, 1]，区间范围未能缩小。
+
+致命后果：程序进入下一轮循环，再次计算出的 mid 依然是 0，再次执行 l = 0。
+
+由于区间始终卡在 [0, 1] 无法改变，程序在此陷入无限死循环。
+
+对于 l = mid 的分支，如果只有两个元素，向下取整会导致 mid 始终等于 l。一旦进入 l = mid 分支，状态就不会发生改变。通过加 1 触发向上取整，使得此时的 mid 落在 r 上，从而保证区间长度被强制缩小。
 
 ## 模板
 ### 模板一
 ```c++
-
+// 区间[l, r]被划分成[l, mid]和[mid + 1, r]时使用：
+int bsearch_1(int l, int r)
+{
+    while (l < r)
+    {
+        int mid = (l + r) >> 1;
+        if (check(mid)) r = mid;    // check()判断mid是否满足性质,true选择左区间
+        else l = mid + 1;           // false选择右区间
+    }
+    return l;
+}
 ```
 
 ### 模板二
 ```c++
-
+// 区间[l, r]被划分成[l, mid - 1]和[mid, r]时使用：
+int bsearch_2(int l, int r)
+{
+    while (l < r)
+    {
+        int mid = (l + r + 1) >> 1;
+        if (check(mid)) l = mid;    // check()判断mid是否满足性质,true选择右区间
+        else r = mid - 1;           // false选择左区间
+    }
+    return l;
+}
 ```
 
-致命后果：程序进入下一轮循环，再次计算出的 mid 依然是 0，再次执行 lo = 0。
-
-由于区间始终卡在 [0, 1] 无法改变，程序在此陷入无限死循环。
-
-对于 lo = mid 的分支，如果只有两个元素，向下取整会导致 mid 始终等于 lo。一旦进入 lo = mid 分支，状态就不会发生改变。通过加 1 触发向上取整，使得此时的 mid 落在 hi 上，从而保证区间长度被强制缩小。
